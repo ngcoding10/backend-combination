@@ -1,0 +1,11 @@
+{
+  "indexes": [
+    { "collectionGroup": "movi_activities", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "uid", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "movi_notifications", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "uid", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "movi_recs", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "to", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "movi_comments", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "activityId", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "ASCENDING" } ] }
+  ],
+  "fieldOverrides": [
+    { "collectionGroup": "ai_usage", "fieldPath": "expireAt", "ttl": true, "indexes": [] }
+  ]
+}

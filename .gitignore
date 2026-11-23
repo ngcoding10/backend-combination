@@ -1,0 +1,11 @@
+node_modules/
+*.log
+.env
+.env.*
+!.env.example
+.secret.local
+functions/.secret.local
+exports/
+*-service-account*.json
+.firebase/
+functions/.env.local

@@ -1,0 +1,14 @@
+{
+  "name": "backend-combination-functions",
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "engines": { "node": "22" },
+  "scripts": { "test": "node --test test/*.test.js" },
+  "dependencies": {
+    "@anthropic-ai/sdk": "1.12.0",
+    "firebase-admin": "14.5.1",
+    "firebase-functions": "7.4.0",
+    "zod": "^3.25.76"
+  }
+}
