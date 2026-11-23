@@ -6,7 +6,7 @@
     "emulators": "firebase emulators:start --project demo-apps",
     "test:rules": "firebase emulators:exec --project demo-apps --only firestore \"node --test tests/rules.test.mjs\"",
     "test:functions": "npm --prefix functions test",
-    "test:integration": "FAKE_AI=1 firebase emulators:exec --project demo-apps --only auth,firestore,functions \"node --test tests/integration.test.mjs\"",
+    "test:integration": "FAKE_AI=1 firebase emulators:exec --project demo-apps --only auth,firestore,functions \"node --test --test-concurrency=1 tests/integration.test.mjs tests/stats.test.mjs\"",
     "test": "npm run test:functions && node --test tests/migrate.test.mjs && npm run test:rules && npm run test:integration",
     "deploy": "firebase deploy --only firestore,functions"
   },
