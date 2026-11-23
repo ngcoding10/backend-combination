@@ -1,0 +1,42 @@
+name: Move old data
+# One-off copies of accounts and data from the old projects. Run by hand from the Actions tab.
+# "look" reads everything, saves a private backup inside the new project and prints counts only.
+# "commit" also writes. Logs never contain personal data. Secrets are listed in docs/SETUP.md.
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: What to move
+        type: choice
+        options: [movi-from-supabase, whyb-from-old-firebase, pantry-from-old-firebase]
+        required: true
+      mode:
+        description: look = no changes, commit = write
+        type: choice
+        options: [look, commit]
+        default: look
+        required: true
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm --prefix functions ci
+      - name: Run
+        env:
+          NEW_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OLD_WHYB: ${{ secrets.OLD_WHYB_SERVICE_ACCOUNT }}
+          OLD_PANTRY: ${{ secrets.OLD_PANTRY_SERVICE_ACCOUNT }}
+          SOURCE: ${{ inputs.source }}
+          MODE: ${{ inputs.mode }}
+        run: |
+          FLAG=""; [ "$MODE" = "commit" ] && FLAG="--commit"
+          case "$SOURCE" in
+            movi-from-supabase) node scripts/migrate-movi.mjs $FLAG ;;
+            whyb-from-old-firebase) OLD_SERVICE_ACCOUNT="$OLD_WHYB" node scripts/migrate-old-firebase.mjs whyb $FLAG ;;
+            pantry-from-old-firebase) OLD_SERVICE_ACCOUNT="$OLD_PANTRY" node scripts/migrate-old-firebase.mjs pantry $FLAG ;;
+          esac

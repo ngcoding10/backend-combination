@@ -1,0 +1,44 @@
+name: Deploy
+# Publishes the rules, indexes and functions to the real project.
+# Runs after a push to main (once the tests pass) or by hand from the Actions tab.
+# Needs the repository secret FIREBASE_SERVICE_ACCOUNT (see docs/SETUP.md); skipped until it exists.
+on:
+  push:
+    branches: [main]
+    paths: ['firestore.rules', 'firestore.indexes.json', 'firebase.json', 'functions/**', '.github/workflows/deploy.yml']
+  workflow_dispatch:
+concurrency: { group: deploy, cancel-in-progress: false }
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      HAS_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
+    steps:
+      - if: env.HAS_KEY != 'true'
+        run: echo "FIREBASE_SERVICE_ACCOUNT is not set yet; nothing deployed (see docs/SETUP.md)."
+      - if: env.HAS_KEY == 'true'
+        uses: actions/checkout@v4
+      - if: env.HAS_KEY == 'true'
+        uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - if: env.HAS_KEY == 'true'
+        uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - if: env.HAS_KEY == 'true'
+        run: npm ci && npm --prefix functions ci
+      - name: Test before deploying
+        if: env.HAS_KEY == 'true'
+        run: |
+          printf 'PANTRY_ANTHROPIC_KEY=emulator-only\nMOVI_ANTHROPIC_KEY=emulator-only\n' > functions/.secret.local
+          npm test
+          rm functions/.secret.local
+      - name: Deploy
+        if: env.HAS_KEY == 'true'
+        env:
+          KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          printf '%s' "$KEY" > "$RUNNER_TEMP/key.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/key.json"
+          PROJECT=$(node -p "require('$RUNNER_TEMP/key.json').project_id")
+          npx firebase deploy --only firestore,functions --project "$PROJECT" --non-interactive --force
+          rm "$RUNNER_TEMP/key.json"
