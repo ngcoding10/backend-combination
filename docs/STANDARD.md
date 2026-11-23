@@ -1,7 +1,7 @@
 # How every app is built
 
 One rule: **an app repo holds a website and a public config file. Everything else lives here.**
-A new project follows the same seven points, so there is one place to look for each thing.
+A new project follows the same eight points, so there is one place to look for each thing.
 
 1. **One Firebase project** for sign-in, database and functions. One Claude console for AI keys. Nothing else.
 2. **Sign-in** is Firebase Auth: Google, plus email and password. The app calls `core.signInWithGoogle()`
@@ -21,6 +21,10 @@ A new project follows the same seven points, so there is one place to look for e
 7. **Browser storage** keys start with the app's name and a dot (`movi.…`), because all the apps share one
    website address and therefore one storage area.
 
+8. **Search forgives typos.** Every search box falls back to `web/fuzzy.js` (copied unchanged, like
+   `core.js`) when the normal search finds little or nothing, so "avenjers", "madird" or "xantham gum" still
+   find the right thing. Results from the fallback are shown the same way as normal ones.
+
 ## Adding a new app
 
 1. Pick a prefix. Add its section to `firestore.rules` and tests for it. Add indexes if its queries need them.
@@ -39,6 +43,7 @@ A new project follows the same seven points, so there is one place to look for e
 | Who can read and write what | `tests/rules.test.mjs` |
 | Sign-in → database → functions together | `tests/integration.test.mjs` |
 | Old-data conversion | `tests/migrate.test.mjs` |
+| Typo-tolerant search | `tests/fuzzy.test.mjs` |
 
 ## Ads (planned, per site)
 
