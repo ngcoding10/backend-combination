@@ -30,7 +30,7 @@ const MOVI_DAILY_TOTAL = defineInt('MOVI_DAILY_TOTAL', { default: 200, descripti
 
 // Only pages on these addresses may call the functions, and (outside the emulator) only with a
 // valid App Check token, which proves the request came from the real site and not a script.
-const CORS = [/^https:\/\/ngcoding10\.github\.io$/, /^https:\/\/ascoding11\.github\.io$/, /^http:\/\/localhost:\d+$/, /^http:\/\/127\.0\.0\.1:\d+$/];
+const CORS = [/^https:\/\/ngcoding10\.github\.io$/, /^https:\/\/ascoding11\.github\.io$/, /^https:\/\/(www\.)?ascoding11\.com$/, /^http:\/\/localhost:\d+$/, /^http:\/\/127\.0\.0\.1:\d+$/];
 const callable = { region: REGION, cors: CORS, enforceAppCheck: !EMULATOR, maxInstances: 5, concurrency: 20 };
 const ai = (secret) => ({ ...callable, secrets: [secret], timeoutSeconds: 120, memory: '512MiB' });
 
