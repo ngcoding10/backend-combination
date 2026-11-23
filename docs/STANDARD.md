@@ -39,3 +39,17 @@ A new project follows the same seven points, so there is one place to look for e
 | Who can read and write what | `tests/rules.test.mjs` |
 | Sign-in → database → functions together | `tests/integration.test.mjs` |
 | Old-data conversion | `tests/migrate.test.mjs` |
+
+## Ads (planned, per site)
+
+Each site may carry its own Google ads later. To keep that a small change:
+- Ads are website-only: a script tag and ad slots in the app repo. Nothing in this backend changes.
+- Every site already has a privacy page; it must be updated to mention advertising cookies when ads go on,
+  and visitors in Europe and some US states must be shown a consent choice first (Google provides one).
+- Ad scripts never get access to sign-in or the database: App Check and the security rules work per
+  request, whatever else runs on the page. Never put account data in page addresses, where ad scripts can read it.
+- Google AdSense approves sites by domain and needs an `ads.txt` file at the domain's root. On
+  `ngcoding10.github.io/<app>` the root belongs to GitHub Pages' user site, and AdSense rarely approves
+  `github.io` addresses, so plan on a domain of your own before applying. A new domain must then be added in
+  four places: Firebase Authentication's authorized domains, the App Check reCAPTCHA key's domains, the
+  `CORS` list in `functions/index.js`, and the app's canonical links.

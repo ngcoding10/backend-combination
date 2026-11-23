@@ -1,7 +1,7 @@
 name: Deploy
 # Publishes the rules, indexes and functions to the real project.
 # Runs after a push to main (once the tests pass) or by hand from the Actions tab.
-# Needs the repository secret FIREBASE_SERVICE_ACCOUNT (see docs/SETUP.md); skipped until it exists.
+# Needs the repository secret FIREBASE_SERVICE_ACCOUNT (a repository secret holding the project's deploy key); skipped until it exists.
 on:
   push:
     branches: [main]
@@ -15,7 +15,7 @@ jobs:
       HAS_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
     steps:
       - if: env.HAS_KEY != 'true'
-        run: echo "FIREBASE_SERVICE_ACCOUNT is not set yet; nothing deployed (see docs/SETUP.md)."
+        run: echo "FIREBASE_SERVICE_ACCOUNT is not set yet; nothing deployed (a repository secret holding the project's deploy key)."
       - if: env.HAS_KEY == 'true'
         uses: actions/checkout@v4
       - if: env.HAS_KEY == 'true'

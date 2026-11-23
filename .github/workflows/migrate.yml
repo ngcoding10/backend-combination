@@ -1,7 +1,7 @@
 name: Move old data
 # One-off copies of accounts and data from the old projects. Run by hand from the Actions tab.
 # "look" reads everything, saves a private backup inside the new project and prints counts only.
-# "commit" also writes. Logs never contain personal data. Secrets are listed in docs/SETUP.md.
+# "commit" also writes. Logs never contain personal data. Secrets: FIREBASE_SERVICE_ACCOUNT, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, OLD_WHYB_SERVICE_ACCOUNT, OLD_PANTRY_SERVICE_ACCOUNT.
 on:
   workflow_dispatch:
     inputs:
