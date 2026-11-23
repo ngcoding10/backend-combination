@@ -58,7 +58,7 @@ test('pantry AI: sign-in required, answer returned, daily limit enforced, counte
   assert.deepEqual(first.usage, { used: 1, limit: 8 });
   await assert.rejects(carol.core.call('pantryGenerateRecipe', { meal: 'brunch' }), (e) => e.code === 'invalid-argument');
   for (let i = 0; i < 7; i++) await carol.core.call('pantryCheckLabel', { text: 'sugar' });
-  await assert.rejects(carol.core.call('pantryGenerateRecipe', req), (e) => e.code === 'resource-exhausted' && /8 AI requests/.test(e.message));
+  await assert.rejects(carol.core.call('pantryGenerateRecipe', req), (e) => e.code === 'resource-exhausted' && /8 AI requests.*UTC\.$/.test(e.message));
   // the pantry limit does not touch Movi's
   const m = await carol.core.call('moviMatchFilms', { lines: [{ text: 'star wars', hints: [] }] });
   assert.equal(m.results[0].films[0].title, 'Star Wars');
@@ -113,6 +113,5 @@ test('deleting one app leaves the others; deleting the last one removes the acco
   const two = await dan.core.deleteMyData('pantry');
   assert.equal(two.accountDeleted, true);
   assert.equal(await alice.core.account.ownerOf(name), null);
-  assert.equal((await F.getDocs(F.collection(alice.db, 'usernames'))).docs.some((d) => d.get('uid') === dan.uid), false);
   await assert.rejects(dan.core.call('accountDeleteMyData', { app: 'nope' }));
 });

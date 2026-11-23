@@ -40,6 +40,8 @@ test('account: claim a username with dots and underscores', async () => {
   await assertSucceeds(claim('alice', 'ali.ce_1'));
   await assertSucceeds(getDoc(doc(db('bob'), 'accounts', 'alice')));
   await assertFails(getDoc(doc(db(null), 'accounts', 'alice')));
+  await assertSucceeds(getDoc(doc(db(null), 'usernames', 'ali.ce_1'))); // "is it taken?" works before sign-up
+  await assertFails(getDocs(collection(db('bob'), 'usernames')));           // but names cannot be listed
 });
 test('account: invalid names are refused', async () => {
   for (const bad of ['ab', 'Alice', 'has space', 'x'.repeat(21), 'émile', 'a-b']) await assertFails(claim('alice', bad));
@@ -129,6 +131,7 @@ test('whyb: friend request, accept, then both see each other; unfriend', async (
   const req = { from: 'alice', to: 'bob', fromName: 'alice', toName: 'bob', createdAt: ts() };
   await assertFails(setDoc(doc(db('alice'), 'whyb_requests', 'bob_alice'), { ...req, fromName: 'someoneelse' }));
   await assertFails(setDoc(doc(db('carol'), 'whyb_requests', 'bob_alice'), req)); // forged sender
+  await assertFails(setDoc(doc(db('alice'), 'whyb_requests', 'ghost_alice'), { ...req, to: 'ghost', toName: 'ghost' })); // not a member of this app
   await assertSucceeds(setDoc(doc(db('alice'), 'whyb_requests', 'bob_alice'), req));
   await assertFails(getDoc(doc(db('carol'), 'whyb_requests', 'bob_alice')));
   await assertSucceeds(getDocs(query(collection(db('bob'), 'whyb_requests'), where('to', '==', 'bob'))));
@@ -176,7 +179,7 @@ test('movi: profile rules', async () => {
   await assertFails(setDoc(p, profile('bob')));
   await assertFails(setDoc(p, profile('alice', { rankedCount: 500 })));
   await assertFails(setDoc(p, profile('alice', { avatarHue: 360 })));
-  await assertFails(setDoc(p, profile('alice', { nameLower: 'other' })));
+  await assertFails(setDoc(p, profile('alice', { nameLower: 'x'.repeat(61) })));
   await assertFails(setDoc(p, profile('alice', { bio: 'x'.repeat(161) })));
   await assertFails(setDoc(p, profile('alice', { isAdmin: true })));
   await assertSucceeds(setDoc(p, profile('alice')));

@@ -11,7 +11,7 @@ Every write that says "server time" must use `serverTimestamp()` — the rules r
 | Path | Fields | Who |
 |---|---|---|
 | `accounts/{uid}` | `username`, `displayName` (≤40), `createdAt`, `updatedAt` (server time) | read: any signed-in person. write: owner, only together with `usernames/{username}` |
-| `usernames/{name}` | `uid` | read: signed-in. One name per person; names are `^[a-z0-9_.]{3,20}$` |
+| `usernames/{name}` | `uid` | anyone can look up one exact name; nobody can list them. One name per person; names are `^[a-z0-9_.]{3,20}$` |
 | `ai_usage/{app}_{day}_{uid}` and `…_total` | daily AI counters | Cloud Functions only |
 
 Use `core.account.claim(name)` from `web/core.js` — never write these two by hand. A person gets
@@ -34,7 +34,7 @@ Functions: `pantryGenerateRecipe(RecipeRequest) → { recipe, usage }`,
 |---|---|
 | `whyb_users/{uid}` | `book` (JSON string), `settings` (JSON string), `name`, `updatedAt` (server time). Owner only. |
 | `whyb_profiles/{uid}` | `username` (must equal the account's), `name`, `stats`, `visited`, `friends`: uid[], `updatedAt`. Read: owner and friends. |
-| `whyb_requests/{to}_{from}` | `from`, `to`, `fromName` (sender's username), `toName`, `createdAt` (server time) |
+| `whyb_requests/{to}_{from}` | the receiver must have a `whyb_profiles` doc. `from`, `to`, `fromName` (sender's username), `toName`, `createdAt` (server time) |
 
 ## Movi (`movi_`)
 

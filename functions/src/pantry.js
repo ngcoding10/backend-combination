@@ -12,7 +12,7 @@ export const APP = 'pantry';
 export const MEALS = ['breakfast', 'lunch', 'dinner', 'snack', 'dessert'];
 const STAPLES = 'salt, black pepper, olive or neutral oil, butter, garlic, onion, common dried herbs and spices, vinegar, lemon, soy sauce, flour, sugar, water';
 
-/** Food ingredients the site scores 0. Rebuilt from the website's data by scripts/sync-pantry-zero-list.mjs. */
+/** Food ingredients the site scores 0. Regenerate with `npm run --silent export:zero-list` in the recipes repo and paste the output into data/pantry-zero-list.json. */
 export const ZERO_LIST = JSON.parse(readFileSync(new URL('../data/pantry-zero-list.json', import.meta.url), 'utf8'));
 
 export const RecipeRequestSchema = z.object({
