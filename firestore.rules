@@ -26,7 +26,8 @@ service cloud.firestore {
     }
 
     match /accounts/{uid} {
-      allow read: if signedIn();
+      // A signed-in person can look up one account they already know the id of; nobody can list accounts.
+      allow get: if signedIn();
       allow create, update: if isMe(uid)
         && request.resource.data.keys().hasOnly(['username', 'displayName', 'createdAt', 'updatedAt'])
         && request.resource.data.keys().hasAll(['username', 'displayName', 'createdAt', 'updatedAt'])

@@ -39,6 +39,7 @@ const seed = (fn) => env.withSecurityRulesDisabled((ctx) => fn(ctx.firestore()))
 test('account: claim a username with dots and underscores', async () => {
   await assertSucceeds(claim('alice', 'ali.ce_1'));
   await assertSucceeds(getDoc(doc(db('bob'), 'accounts', 'alice')));
+  await assertFails(getDocs(collection(db('bob'), 'accounts')));              // accounts cannot be listed
   await assertFails(getDoc(doc(db(null), 'accounts', 'alice')));
   await assertSucceeds(getDoc(doc(db(null), 'usernames', 'ali.ce_1'))); // "is it taken?" works before sign-up
   await assertFails(getDocs(collection(db('bob'), 'usernames')));           // but names cannot be listed

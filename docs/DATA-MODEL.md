@@ -10,7 +10,7 @@ Every write that says "server time" must use `serverTimestamp()` — the rules r
 
 | Path | Fields | Who |
 |---|---|---|
-| `accounts/{uid}` | `username`, `displayName` (≤40), `createdAt`, `updatedAt` (server time) | read: any signed-in person. write: owner, only together with `usernames/{username}` |
+| `accounts/{uid}` | `username`, `displayName` (≤40), `createdAt`, `updatedAt` (server time) | a signed-in person can read one account by id; nobody can list them. write: owner, only together with `usernames/{username}` |
 | `usernames/{name}` | `uid` | anyone can look up one exact name; nobody can list them. One name per person; names are `^[a-z0-9_.]{3,20}$` |
 | `ai_usage/{app}_{day}_{uid}` and `…_total` | daily AI counters | Cloud Functions only |
 
