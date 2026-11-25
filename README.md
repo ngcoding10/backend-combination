@@ -9,6 +9,7 @@ Cloud Functions and their tests. The app repos hold only their websites and the 
 - `web/fuzzy.js` — typo-tolerant search every app copies unchanged
 - `tests/` — rules tests and end-to-end tests that run on the local emulators
 - `scripts/` — one-off data moves from the old projects
+- `HANDOFF.md` — current state and what is left (read this first)
 - `docs/` — [STANDARD.md](docs/STANDARD.md) (how every app is built), [DATA-MODEL.md](docs/DATA-MODEL.md)
 
 ```bash
