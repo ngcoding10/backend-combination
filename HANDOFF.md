@@ -34,8 +34,13 @@ Read next, in this repo: `docs/STANDARD.md` (the rules every app follows), `docs
 - **Shared web code:** `web/core.js` (v1.1.0: sign-in, shared account + username, App Check, function calls) and
   `web/fuzzy.js` (typo-tolerant search). Each app holds a byte-identical copy; never edit a copy.
 - **All three apps** on their work branches: pointed at `combination-23e84` with App Check site key, typo-tolerant
-  search everywhere, emulator walkthroughs passing (Pantry 48/48 via `npm run test:e2e`; Where Have You Been 51/51
-  three runs in a row via `tools/e2e-emulator.js`; Movi 27/27 via `tests/e2e-live.cjs`, demo tests 25/25).
+  search everywhere, emulator walkthroughs passing (Pantry 48/48 via `npm run test:e2e`; Where Have You Been 53/53
+  via `tools/e2e-emulator.js` plus `tools/e2e-landmarks` 44/44 at `1b5e65f`; Movi 27/27 via `tests/e2e-live.cjs`, demo tests 25/25).
+- **WHYB landmark checklists** (`1b5e65f`): ticking a landmark auto-logs city/region/country (marked `a:1`, removed on
+  un-tick only if untouched); city and country checklists; guided "which cities / which sights" step after stamping a
+  country (`g:1`); 1,587 city sights in `data/sights.json` (2,056 landmarks total, 195 of 201 target cities) kept as a
+  separate "City sights" group so wonder counts/badges keep their meaning. 341 hand-checked, two 50-sample spot-checks
+  0 wrong places. No rules change. Unchecked: Dubai/Shenzhen-type lists thin; target cities picked from memory.
 - **Movi extras:** film list grew 36,115 → 39,259 (ids unchanged, new films appended), buried famous films lifted,
   alternate titles searchable, wording and design polish.
 
