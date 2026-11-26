@@ -118,11 +118,16 @@ functions, daily AI limits, bot protection (App Check, to be enforced in step 4)
 ### GeoHistory (`ngcoding10/geohistory`, `main`, static, no backend yet)
 Type a year, the world map redraws to that time, with powers, territories and events. Pushed to `main`; Pages not
 yet turned on by the owner (repo must be public).
-- State after research round 2 (26 Nov): a border map for every year 1700-2019 (Cliopatria CC BY 1700-1885, CShapes
-  non-commercial 1886-2019), 37 coarse snapshots before 1700, colonial county outlines from 1629; 102,685 events;
-  13,870 ruler terms; `tools/audit.py` 665 of 682 facts pass; `tools/e2e.cjs` 36 checks. `data/` is 104 MB.
-- Round 3 was started the same day: pre-1700 borders from Cliopatria, readable year-article events, ranking review,
-  ruler coverage, US territories. Check `git log` there for what landed.
+- State after three research rounds and one visual check (26 Nov): borders for every change-year 3400 BC-1885
+  (Cliopatria, CC BY), every year 1886-2019 (CShapes, non-commercial), sketch maps (historical-basemaps) before that and
+  as a pale underlay for stateless peoples; US states/territories 1783-1912 filled; 132,851 events (29,130 of them
+  unverified sentences from Wikipedia year articles); ruler terms for most major states; `tools/audit.py` 867 of 876;
+  `tools/e2e.cjs` 79 checks. `data/` is about 131-141 MB; the agreed ceiling is 150 MB.
+- Trust level (visual check's verdict): good for 1886-2019 outside the world wars, big states of 1500-1885 and
+  classical Eurasia, US 1783-1912. Weak: wartime years show recognised borders only; India before 1500; anything pale
+  with an italic label (sub-Saharan Africa before ~1500, pre-Columbian Americas, Australia, Siberia, Bronze Age Europe).
+  Full known-limits list is in that repo's README.
+- Not yet checked by eye: dark theme, globe view, play button, zoomed-in labels, real phones.
 - **The owner's priority is depth and accuracy above everything: "tons and tons of research, be super thorough".**
 - Owner's decisions: non-commercial-licensed datasets ARE allowed (his call; record each in `CREDITS.md`; they must
   be swapped out or cleared before ads go on that site). Content written from AI knowledge is allowed, but mark it
