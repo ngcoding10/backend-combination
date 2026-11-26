@@ -124,15 +124,13 @@ yet turned on by the owner (repo must be public).
   dated memberships, 216 verified); Before/After in every state panel; WWI/WWII occupation overlay; about 131,000
   events (about 27,800 unverified Wikipedia year-article sentences); `tools/audit.py` 1,181 of 1,202; `tools/e2e.cjs`
   99 checks; `data/` about 104 MB (ceiling 150). Full known limits are in that repo's README.
-- **A clean-up round was stopped partway at the owner's request.** Its first item (occupation hatching rule, legend,
-  partly occupied countries) is on `main`. Its unfinished rest is on branch `wip-round6` (one commit, NOT safe to
-  publish: `tools/build_succession.py` was mid-rewrite and `data/` there may be half rebuilt). To continue: check out
-  `wip-round6`, keep the `tools/` changes (`clio_dates.json`, `underlay.json`, `map_notes.json`, `build_clio.py`,
-  audit facts), finish or revert `build_succession.py`, run `tools/build_all.sh`, then audit and e2e, then merge.
-- Still to do from that round: six errors seen by eye (Khwarezm 1227, Alsace-Lorraine 1871, Tang 907, Mitanni 1250 BC,
-  Great Moravia 814, Hoysala 1350); Athens blank in 440 BC; the 21 audit failures; noisy Before/After lists (judge 25
-  well-known states); review the 208 unverified empire memberships; duplicate-event sweep; speed check with the finer
-  borders; one full rebuild from scratch. Never checked: real phones, browsers other than headless Chromium.
+- Clean-up round 6 finished 27 Nov (`main` at `7310d5b`, full rebuild, audit 1,222 of 1,236, e2e 100 of 100,
+  `data/` 114 MB). Remote branch `wip-round6` is obsolete (its work is squashed into main); the proxy would not let
+  me delete it, so the owner can delete it on GitHub.
+- Left from that round: 14 audit failures (4 places blank in every source: Malwa 1450, Cuttack 1450, Berlin AD 100,
+  Buenos Aires 1700; 10 source-map errors listed in the README); event types of unverified year-article entries are
+  wrong or too general in 44 of 150 sampled (classifier not touched in round 6); first page load is 5.7 MB / ~7 s;
+  199 empire memberships unverified; Before/After checked for only 25 states. Never checked: real phones, real GPUs.
 - **The owner's priority is depth and accuracy above everything: "tons and tons of research, be super thorough".**
 - Owner's decisions: non-commercial-licensed datasets ARE allowed (his call; record each in `CREDITS.md`; they must
   be swapped out or cleared before ads go on that site). Content written from AI knowledge is allowed, but mark it
