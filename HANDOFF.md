@@ -127,10 +127,15 @@ yet turned on by the owner (repo must be public).
 - Clean-up round 6 finished 27 Nov (`main` at `7310d5b`, full rebuild, audit 1,222 of 1,236, e2e 100 of 100,
   `data/` 114 MB). Remote branch `wip-round6` is obsolete (its work is squashed into main); the proxy would not let
   me delete it, so the owner can delete it on GitHub.
-- Left from that round: 14 audit failures (4 places blank in every source: Malwa 1450, Cuttack 1450, Berlin AD 100,
-  Buenos Aires 1700; 10 source-map errors listed in the README); event types of unverified year-article entries are
-  wrong or too general in 44 of 150 sampled (classifier not touched in round 6); first page load is 5.7 MB / ~7 s;
-  199 empire memberships unverified; Before/After checked for only 25 states. Never checked: real phones, real GPUs.
+- Round 7 finished (`main` at `755383b`): animated time travel (`js/travel.js`: passes through every stored map year,
+  cross-fades with colour kept per power, speed 1-50x, reduced-motion and slow-device fallback; no shape morphing).
+  Audit 1,231 of 1,242, e2e 108 of 108, `data/` 120 MB. Event classifier: 38 of 150 wrong/too general on a fresh
+  sample (was 47). OpenHistoricalMap fixed Malwa 1450, Ottawa 1870, Goa 1600. Before/After: 7 rule fixes, 50 states
+  read. Memberships 231 of 418 confirmed. First load 1776: 6.37 -> 4.39 MB.
+- Left: 11 audit failures (blank: Cuttack 1450, Berlin AD 100, Buenos Aires 1700; 8 source errors in CREDITS);
+  "Vietnam" name shared by two states; Egypt 1886 predecessor "British Africa"; Ethiopia predecessor Ifat; 187
+  memberships unconfirmed; 1885->1886 source switch jumps in the animation; occupation hatching pops, doesn't fade.
+  Never checked: real phones, real GPUs (headless frames 430-600 ms at 1280x800, software rendering).
 - **The owner's priority is depth and accuracy above everything: "tons and tons of research, be super thorough".**
 - Owner's decisions: non-commercial-licensed datasets ARE allowed (his call; record each in `CREDITS.md`; they must
   be swapped out or cleared before ads go on that site). Content written from AI knowledge is allowed, but mark it
