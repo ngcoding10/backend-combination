@@ -14,5 +14,5 @@ jobs:
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: 21 }
       - run: npm ci && npm --prefix functions ci
-      - run: printf 'PANTRY_ANTHROPIC_KEY=emulator-only\nMOVI_ANTHROPIC_KEY=emulator-only\n' > functions/.secret.local
+      - run: printf 'PANTRY_ANTHROPIC_KEY=emulator-only\nMOVI_ANTHROPIC_KEY=emulator-only\nPALETTE_ANTHROPIC_KEY=emulator-only\n' > functions/.secret.local
       - run: npm test

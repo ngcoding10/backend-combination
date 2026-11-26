@@ -20,6 +20,7 @@ Read this first in a new chat. It replaces the long chat that built everything. 
 | Backend (rules, functions, tests, shared web code) | `ngcoding10/backend-combination` | `main` (push = test + deploy) | `main` | **Yes**, on Firebase project `combination-23e84` |
 | The Pantry (Astro + React) | `ngcoding10/recipes` | `claude/recipe-library-site-y0b77e` (GitHub Actions → Pages) | `claude/stoic-keller-0m98rl` | **Yes**, on the new backend since 24 Nov. Owner has not yet confirmed sign-in + an AI recipe work. |
 | Where Have You Been (static) | `ngcoding10/wherehaveyoubeen` | `main` (Pages from branch) | `claude/stoic-keller-0m98rl` | **No.** Still the old version on old project `where-have-you-been-f130a`. |
+| MyPalette (static) | `ngcoding10/mypalette` | `main` (Pages from branch, root) | backend: branch `mypalette` here | **No.** Backend part not merged; see the MyPalette section below. |
 | Movi (static, in `docs/`) | `ngcoding10/claude` | `claude/beli-app-template-BJhj8` (Pages from branch, `/docs`) | `claude/stoic-keller-0m98rl` | **No.** Still the old Supabase version. |
 
 Each live branch got a `HANDOVER.md` describing the OLD setup. They are history now; this file is current.
@@ -79,6 +80,14 @@ Tests stub or override the real config, so they never touch `combination-23e84`.
 6. **Movi posters:** about 1,770 of the 3,144 new films have one. `python3 tools/enrich_from_wikidata.py docs/data --minutes=110`
    adds roughly 500 per run (Wikipedia throttles). A free TMDB API key from the owner would finish it in minutes
    (`tools/fetch_tmdb_posters.py`); ask for it through the secure credential form, not chat.
+
+## MyPalette (added 26 Nov 2026, branch `mypalette`, not merged)
+
+New functions `paletteReadMenu` (Claude reads a menu photo or text) and `paletteShareSession` (anonymous,
+consented training sessions), rules for `palette_users`, `palette_users/*/meals`, `palette_sessions`, and a
+`palette` delete routine. Before merging this branch to `main` (which deploys): add the secret
+`PALETTE_ANTHROPIC_KEY` in Secret Manager, or the deploy fails. Limits are in `functions/.env`.
+Export shared sessions with the "Export MyPalette sessions" workflow, then run `tools/evaluate.mjs` in the app repo.
 
 ## Launch checklist (owner's list), per site
 

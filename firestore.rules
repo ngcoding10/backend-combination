@@ -1,7 +1,7 @@
 rules_version = '2';
-// One Firestore for every app. Shared: accounts, usernames. Per app: pantry_*, whyb_*, movi_*.
+// One Firestore for every app. Shared: accounts, usernames. Per app: pantry_*, whyb_*, movi_*, palette_*.
 // Anything not matched below is denied. Collections written only by Cloud Functions
-// (ai_usage, movi_notifications creation, movi_film_stats, movi_stats) have no client write rule.
+// (ai_usage, movi_notifications creation, movi_film_stats, movi_stats, palette_sessions) have no client write rule.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -295,5 +295,40 @@ service cloud.firestore {
     // Site-wide averages, rebuilt by a scheduled Cloud Function.
     match /movi_film_stats/{chunk} { allow read: if signedIn(); }
     match /movi_stats/{id} { allow read: if signedIn(); }
+
+    // ───────────────────────── MyPalette ─────────────────────────
+    // Taste profile: intake answers, learned weights, training history (JSON string). Owner only.
+    match /palette_users/{uid} {
+      allow read, delete: if isMe(uid);
+      allow create, update: if isMe(uid)
+        && request.resource.data.keys().hasOnly(['intake', 'weights', 'stats', 'history', 'updatedAt'])
+        && request.resource.data.keys().hasAll(['intake', 'weights', 'history', 'updatedAt'])
+        && request.resource.data.intake is map
+        && request.resource.data.intake.size() <= 20
+        && request.resource.data.weights is map
+        && request.resource.data.weights.size() <= 400
+        && (!('stats' in request.resource.data) || (request.resource.data.stats is map && request.resource.data.stats.size() <= 20))
+        && text(request.resource.data.history, 600000)
+        && request.resource.data.updatedAt == request.time;
+
+      // Menus read from a photo or text, what was ordered and how it went. Owner only.
+      match /meals/{mealId} {
+        allow read, delete: if isMe(uid);
+        allow create, update: if isMe(uid)
+          && request.resource.data.keys().hasOnly(['title', 'cuisine', 'dishes', 'picks', 'ordered', 'ratings', 'createdAt'])
+          && request.resource.data.keys().hasAll(['dishes', 'picks', 'createdAt'])
+          && (!('title' in request.resource.data) || text(request.resource.data.title, 80))
+          && (!('cuisine' in request.resource.data) || text(request.resource.data.cuisine, 60))
+          && request.resource.data.dishes is list && request.resource.data.dishes.size() <= 80
+          && request.resource.data.picks is list && request.resource.data.picks.size() <= 3
+          && (!('ordered' in request.resource.data) || (request.resource.data.ordered is list && request.resource.data.ordered.size() <= 12))
+          && (!('ratings' in request.resource.data) || (request.resource.data.ratings is map && request.resource.data.ratings.size() <= 12))
+          && request.resource.data.createdAt is timestamp;
+      }
+    }
+
+    // Anonymous training sessions shared with consent. Written only by the paletteShareSession
+    // function (App Check + daily caps), read only by the owner's export script. No browser access.
+    match /palette_sessions/{id} { allow read, write: if false; }
   }
 }

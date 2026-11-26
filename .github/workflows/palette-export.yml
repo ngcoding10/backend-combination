@@ -1,0 +1,22 @@
+name: Export MyPalette sessions
+# Run by hand from the Actions tab. Downloads the anonymous training sessions people chose to share
+# and attaches them to the run as a file (kept for 1 day). Then, in the mypalette repo:
+#   node tools/evaluate.mjs palette-sessions.json
+# Note: this repo is public, so anyone signed in to GitHub could download that file while it exists.
+# The sessions are anonymous (random id, intake choices, menu picks), but delete the run after downloading.
+on:
+  workflow_dispatch:
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm --prefix functions ci
+      - name: Export
+        env:
+          NEW_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node scripts/export-palette-sessions.mjs palette-sessions.json
+      - uses: actions/upload-artifact@v4
+        with: { name: palette-sessions, path: palette-sessions.json, retention-days: 1 }

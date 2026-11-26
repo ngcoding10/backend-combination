@@ -29,7 +29,7 @@ jobs:
       - name: Test before deploying
         if: env.HAS_KEY == 'true'
         run: |
-          printf 'PANTRY_ANTHROPIC_KEY=emulator-only\nMOVI_ANTHROPIC_KEY=emulator-only\n' > functions/.secret.local
+          printf 'PANTRY_ANTHROPIC_KEY=emulator-only\nMOVI_ANTHROPIC_KEY=emulator-only\nPALETTE_ANTHROPIC_KEY=emulator-only\n' > functions/.secret.local
           npm test
           rm functions/.secret.local
       - name: Deploy

@@ -115,3 +115,28 @@ test('deleting one app leaves the others; deleting the last one removes the acco
   assert.equal(await alice.core.account.ownerOf(name), null);
   await assert.rejects(dan.core.call('accountDeleteMyData', { app: 'nope' }));
 });
+
+test('palette: menu reading needs sign-in, is limited per day; sessions are shared anonymously; delete works', async () => {
+  const anon = createCore({ appName: 'anon2', sdk: { ...sdk, app: { ...app, initializeApp: (c) => app.initializeApp(c, 'anon2') } }, config: null, emulator: true, offlineCache: false });
+  await assert.rejects(anon.call('paletteReadMenu', { text: 'Pad thai' }), (e) => e.code === 'unauthenticated');
+  // sharing a training session works without signing in, and nothing in it names the person
+  const id = `s${run}`.padEnd(20, 'x');
+  const session = { v: 1, intake: { diet: [], allergies: ['peanut'], never: [], spice: 2, adventure: 1, cuisines: [] }, rounds: [{ menu: 'thai', predicted: ['a', 'b', 'c'], picked: ['b'], never: [] }] };
+  assert.deepEqual(await anon.call('paletteShareSession', { id, session }), { saved: 1 });
+  await assert.rejects(anon.call('paletteShareSession', { id, session: { ...session, v: 2 } }), (e) => e.code === 'invalid-argument');
+  await assert.rejects(F.getDoc(F.doc(alice.db, 'palette_sessions', id)), (e) => e.code === 'permission-denied');
+  assert.deepEqual(await anon.call('paletteShareSession', { id, remove: true }), { removed: true });
+
+  const erin = await person(`erin-${run}@example.com`);
+  const first = await erin.core.call('paletteReadMenu', { text: 'Pad thai, green curry', profile: { allergies: ['peanut'], spice: 2 } });
+  assert.equal(first.menu.cuisineGuess, 'Thai');
+  assert.ok(first.menu.dishes.length >= 5 && first.menu.picks.length <= 3);
+  assert.deepEqual(first.usage, { used: 1, limit: 10 });
+  for (let i = 1; i < 10; i++) await erin.core.call('paletteReadMenu', { text: 'menu' });
+  await assert.rejects(erin.core.call('paletteReadMenu', { text: 'menu' }), (e) => e.code === 'resource-exhausted' && /10 AI requests/.test(e.message));
+
+  await F.setDoc(F.doc(erin.db, 'palette_users', erin.uid), { intake: {}, weights: {}, history: '[]', updatedAt: F.serverTimestamp() });
+  await F.addDoc(F.collection(erin.db, 'palette_users', erin.uid, 'meals'), { dishes: [], picks: [], createdAt: F.serverTimestamp() });
+  const res = await erin.core.deleteMyData('palette');
+  assert.deepEqual(res, { deleted: ['palette'], accountDeleted: true });
+});

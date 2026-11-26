@@ -8,13 +8,14 @@ import { onDocumentWritten, onDocumentCreated, onDocumentDeleted } from 'firebas
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { defineInt, defineSecret } from 'firebase-functions/params';
 import * as logger from 'firebase-functions/logger';
-import { claudeAsk, firestoreMeter, publicError } from './src/ai.js';
+import { claudeAsk, firestoreMeter, publicError, utcDay } from './src/ai.js';
 import { UserFacingError } from './src/errors.js';
 import { handleCheckLabel, handleGenerateRecipe } from './src/pantry.js';
 import { handleMatchFilms } from './src/movi-match.js';
 import { onActivityDeleted, onCommentWritten, onFollowWritten, onLikeWritten, onRecCreated } from './src/movi-social.js';
 import { rebuildStats } from './src/movi-stats.js';
 import { deleteMyData } from './src/account.js';
+import { handleReadMenu, handleShareSession } from './src/palette.js';
 
 initializeApp();
 const db = getFirestore();
@@ -26,6 +27,9 @@ const MOVI_ANTHROPIC_KEY = defineSecret('MOVI_ANTHROPIC_KEY');
 const PANTRY_DAILY_PER_USER = defineInt('PANTRY_DAILY_PER_USER', { default: 8, description: 'The Pantry: AI requests each person may make per day' });
 const PANTRY_DAILY_TOTAL = defineInt('PANTRY_DAILY_TOTAL', { default: 100, description: 'The Pantry: AI requests for everyone per day (the spending cap)' });
 const MOVI_DAILY_PER_USER = defineInt('MOVI_DAILY_PER_USER', { default: 15, description: 'Movi: AI title-matching requests each person may make per day' });
+const PALETTE_ANTHROPIC_KEY = defineSecret('PALETTE_ANTHROPIC_KEY');
+const PALETTE_DAILY_PER_USER = defineInt('PALETTE_DAILY_PER_USER', { default: 10, description: 'MyPalette: menu readings each person may make per day' });
+const PALETTE_DAILY_TOTAL = defineInt('PALETTE_DAILY_TOTAL', { default: 150, description: 'MyPalette: menu readings for everyone per day (the spending cap)' });
 const MOVI_DAILY_TOTAL = defineInt('MOVI_DAILY_TOTAL', { default: 200, description: 'Movi: AI requests for everyone per day (the spending cap)' });
 
 // Only pages on these addresses may call the functions, and (outside the emulator) only with a
@@ -58,6 +62,14 @@ export const pantryCheckLabel = onCall(ai(PANTRY_ANTHROPIC_KEY), (req) => run('p
 // ───────── Movi ─────────
 const moviDeps = () => ({ ask: asker(MOVI_ANTHROPIC_KEY, 'movi'), meter, limits: { perUser: MOVI_DAILY_PER_USER.value(), total: MOVI_DAILY_TOTAL.value() } });
 export const moviMatchFilms = onCall(ai(MOVI_ANTHROPIC_KEY), (req) => run('moviMatchFilms', () => handleMatchFilms(req.auth?.uid, req.data, moviDeps())));
+
+// ───────── MyPalette ─────────
+// Reading a menu can take a while (a long menu is many dishes to explain), so it gets more time.
+const paletteDeps = () => ({ ask: asker(PALETTE_ANTHROPIC_KEY, 'palette'), meter, limits: { perUser: PALETTE_DAILY_PER_USER.value(), total: PALETTE_DAILY_TOTAL.value() } });
+export const paletteReadMenu = onCall({ ...ai(PALETTE_ANTHROPIC_KEY), timeoutSeconds: 300 }, (req) => run('paletteReadMenu', () => handleReadMenu(req.auth?.uid, req.data, paletteDeps())));
+// Anonymous training sessions, only from people who ticked the consent box. Works signed out too;
+// App Check plus a per-address daily cap keep scripts out. No AI, no secret.
+export const paletteShareSession = onCall({ ...callable, timeoutSeconds: 30 }, (req) => run('paletteShareSession', () => handleShareSession(req.auth?.uid, req.rawRequest?.ip, req.data, { db, meter, FieldValue, day: utcDay() })));
 
 const trigger = (document) => ({ document, region: REGION, maxInstances: 5 });
 const ev = (e) => ({ before: e.data?.before?.data?.() ?? undefined, after: (e.data?.after ?? e.data)?.data?.() ?? undefined, id: Object.values(e.params)[0], now: new Date(e.time) });
