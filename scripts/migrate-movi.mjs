@@ -9,7 +9,7 @@ import { connect, importUsers, saveBackup, settleUsernames } from './lib/admin.m
 import { authRecords, transformMovi } from './lib/movi-transform.mjs';
 
 const commit = process.argv.includes('--commit');
-const base = (process.env.SUPABASE_URL ?? '').replace(/\/$/, '');
+const base = (process.env.SUPABASE_URL ?? '').trim().replace(/\/+$/, '').replace(/\/rest\/v1$/, '');
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!base || !key) throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set');
 const headers = { apikey: key, Authorization: `Bearer ${key}` };
