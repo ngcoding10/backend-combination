@@ -112,3 +112,28 @@ functions, daily AI limits, bot protection (App Check, to be enforced in step 4)
   accounts can be listed.
 - The owner pasted two Claude API keys and showed others in screenshots in the old chat and chose not to rotate
   them. Do not repeat them anywhere.
+
+## Two newer apps (added 26 Nov 2026)
+
+### GeoHistory (`ngcoding10/geohistory`, `main`, static, no backend yet)
+Type a year, the world map redraws to that time, with powers, territories and events. Version 1 was being built by
+an agent when this was written: check `git log` and `data/meta.json` there for what landed.
+- **The owner's priority is depth and accuracy above everything: "tons and tons of research, be super thorough".**
+- Owner's decisions: non-commercial-licensed datasets ARE allowed (his call; record each in `CREDITS.md`; they must
+  be swapped out or cleared before ads go on that site). Content written from AI knowledge is allowed, but mark it
+  as curated, keep it conservative, and cross-check dates against Wikidata/Wikipedia wherever possible.
+- Planned research rounds after v1: (1) far wider event classes (rulers and reigns, dynasties, capitals, laws,
+  religion, exploration, inventions, epidemics, notable births/deaths); (2) Wikipedia year articles as the yearly
+  narrative backbone (Wikipedia throttles this sandbox to a few requests a minute: run slowly, cache, resume);
+  (3) finer borders: yearly state borders 1886+ (CShapes), US colonies/states over time (Newberry atlas or
+  hand-built from documented dates); (4) per-territory timelines; (5) accuracy spot-checks with a pass count.
+- Only one agent at a time in that repo.
+
+### MyPalette (`ngcoding10/mypalette`, `main`; backend part on branch `mypalette` of THIS repo, NOT merged)
+Learns what food someone likes from training rounds, then reads a menu photo and gives a top 3. Version 1 is built;
+training works with no setup (`?train=1` is the link the owner sends to testers).
+- **Do not merge branch `mypalette` into `main` until the secret `PALETTE_ANTHROPIC_KEY` exists**, or every deploy fails.
+- Owner still has to: make the repo public (or pay for Pages), create the Claude workspace + key + secret, register a
+  fourth web app and add it to App Check, turn on Pages. Then fill `js/config.js` and merge the backend branch.
+- Never tested with real Claude or a real camera. Learner hit rates so far are on synthetic people only; the real
+  test is `tools/evaluate.mjs` on exported tester sessions.
