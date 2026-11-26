@@ -118,16 +118,21 @@ functions, daily AI limits, bot protection (App Check, to be enforced in step 4)
 ### GeoHistory (`ngcoding10/geohistory`, `main`, static, no backend yet)
 Type a year, the world map redraws to that time, with powers, territories and events. Pushed to `main`; Pages not
 yet turned on by the owner (repo must be public).
-- State after three research rounds and one visual check (26 Nov): borders for every change-year 3400 BC-1885
-  (Cliopatria, CC BY), every year 1886-2019 (CShapes, non-commercial), sketch maps (historical-basemaps) before that and
-  as a pale underlay for stateless peoples; US states/territories 1783-1912 filled; 132,851 events (29,130 of them
-  unverified sentences from Wikipedia year articles); ruler terms for most major states; `tools/audit.py` 867 of 876;
-  `tools/e2e.cjs` 79 checks. `data/` is about 131-141 MB; the agreed ceiling is 150 MB.
-- Trust level (visual check's verdict): good for 1886-2019 outside the world wars, big states of 1500-1885 and
-  classical Eurasia, US 1783-1912. Weak: wartime years show recognised borders only; India before 1500; anything pale
-  with an italic label (sub-Saharan Africa before ~1500, pre-Columbian Americas, Australia, Siberia, Bronze Age Europe).
-  Full known-limits list is in that repo's README.
-- Not yet checked by eye: dark theme, globe view, play button, zoomed-in labels, real phones.
+- State on 26 Nov after five rounds (`main` at `471b2ab`, pushed, clean): borders for every change-year 3400 BC-1885
+  (Cliopatria, CC BY) and every year 1886-2019 (CShapes, non-commercial), sketch maps before that and as soft regions
+  for stateless peoples; atlas-style look; empires draw as one at world zoom and split into parts when zoomed in (424
+  dated memberships, 216 verified); Before/After in every state panel; WWI/WWII occupation overlay; about 131,000
+  events (about 27,800 unverified Wikipedia year-article sentences); `tools/audit.py` 1,181 of 1,202; `tools/e2e.cjs`
+  99 checks; `data/` about 104 MB (ceiling 150). Full known limits are in that repo's README.
+- **A clean-up round was stopped partway at the owner's request.** Its first item (occupation hatching rule, legend,
+  partly occupied countries) is on `main`. Its unfinished rest is on branch `wip-round6` (one commit, NOT safe to
+  publish: `tools/build_succession.py` was mid-rewrite and `data/` there may be half rebuilt). To continue: check out
+  `wip-round6`, keep the `tools/` changes (`clio_dates.json`, `underlay.json`, `map_notes.json`, `build_clio.py`,
+  audit facts), finish or revert `build_succession.py`, run `tools/build_all.sh`, then audit and e2e, then merge.
+- Still to do from that round: six errors seen by eye (Khwarezm 1227, Alsace-Lorraine 1871, Tang 907, Mitanni 1250 BC,
+  Great Moravia 814, Hoysala 1350); Athens blank in 440 BC; the 21 audit failures; noisy Before/After lists (judge 25
+  well-known states); review the 208 unverified empire memberships; duplicate-event sweep; speed check with the finer
+  borders; one full rebuild from scratch. Never checked: real phones, browsers other than headless Chromium.
 - **The owner's priority is depth and accuracy above everything: "tons and tons of research, be super thorough".**
 - Owner's decisions: non-commercial-licensed datasets ARE allowed (his call; record each in `CREDITS.md`; they must
   be swapped out or cleared before ads go on that site). Content written from AI knowledge is allowed, but mark it
