@@ -116,17 +116,17 @@ functions, daily AI limits, bot protection (App Check, to be enforced in step 4)
 ## Two newer apps (added 26 Nov 2026)
 
 ### GeoHistory (`ngcoding10/geohistory`, `main`, static, no backend yet)
-Type a year, the world map redraws to that time, with powers, territories and events. Version 1 was being built by
-an agent when this was written: check `git log` and `data/meta.json` there for what landed.
+Type a year, the world map redraws to that time, with powers, territories and events. Pushed to `main`; Pages not
+yet turned on by the owner (repo must be public).
+- State after research round 2 (26 Nov): a border map for every year 1700-2019 (Cliopatria CC BY 1700-1885, CShapes
+  non-commercial 1886-2019), 37 coarse snapshots before 1700, colonial county outlines from 1629; 102,685 events;
+  13,870 ruler terms; `tools/audit.py` 665 of 682 facts pass; `tools/e2e.cjs` 36 checks. `data/` is 104 MB.
+- Round 3 was started the same day: pre-1700 borders from Cliopatria, readable year-article events, ranking review,
+  ruler coverage, US territories. Check `git log` there for what landed.
 - **The owner's priority is depth and accuracy above everything: "tons and tons of research, be super thorough".**
 - Owner's decisions: non-commercial-licensed datasets ARE allowed (his call; record each in `CREDITS.md`; they must
   be swapped out or cleared before ads go on that site). Content written from AI knowledge is allowed, but mark it
   as curated, keep it conservative, and cross-check dates against Wikidata/Wikipedia wherever possible.
-- Planned research rounds after v1: (1) far wider event classes (rulers and reigns, dynasties, capitals, laws,
-  religion, exploration, inventions, epidemics, notable births/deaths); (2) Wikipedia year articles as the yearly
-  narrative backbone (Wikipedia throttles this sandbox to a few requests a minute: run slowly, cache, resume);
-  (3) finer borders: yearly state borders 1886+ (CShapes), US colonies/states over time (Newberry atlas or
-  hand-built from documented dates); (4) per-territory timelines; (5) accuracy spot-checks with a pass count.
 - Only one agent at a time in that repo.
 
 ### MyPalette (`ngcoding10/mypalette`, `main`; backend part on branch `mypalette` of THIS repo, NOT merged)
