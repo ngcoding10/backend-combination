@@ -18,9 +18,9 @@ Read this first in a new chat. It replaces the long chat that built everything. 
 | Piece | Repo | Live branch | Work branch | Live? |
 |---|---|---|---|---|
 | Backend (rules, functions, tests, shared web code) | `ngcoding10/backend-combination` | `main` (push = test + deploy) | `main` | **Yes**, on Firebase project `combination-23e84` |
-| The Pantry (Astro + React) | `ngcoding10/recipes` | `claude/recipe-library-site-y0b77e` (GitHub Actions → Pages) | `claude/stoic-keller-0m98rl` | **Yes**, on the new backend since 24 Nov. Owner has not yet confirmed sign-in + an AI recipe work. |
-| Where Have You Been (static) | `ngcoding10/wherehaveyoubeen` | `main` (Pages from branch) | `claude/stoic-keller-0m98rl` | **No.** Still the old version on old project `where-have-you-been-f130a`. |
-| Movi (static, in `docs/`) | `ngcoding10/claude` | `claude/beli-app-template-BJhj8` (Pages from branch, `/docs`) | `claude/stoic-keller-0m98rl` | **No.** Still the old Supabase version. |
+| The Pantry (Astro + React) | `ngcoding10/recipes` | `claude/recipe-library-site-y0b77e` (GitHub Actions → Pages) | `claude/stoic-keller-0m98rl` | **Yes**, on the new backend since 24 Nov. Owner confirmed sign-in + AI recipe ("1 of 8 used") on 26 Nov. |
+| Where Have You Been (static) | `ngcoding10/wherehaveyoubeen` | `main` (Pages from branch) | `claude/stoic-keller-0m98rl` | **Yes**, released 27 Nov (`main` = `1b5e65f`). 2 old accounts moved (backup `whyb-old-firebase_2026-11-27T00-04-17-259Z`). Old project not yet switched off. |
+| Movi (static, in `docs/`) | `ngcoding10/claude` | `claude/beli-app-template-BJhj8` (Pages from branch, `/docs`) | `claude/stoic-keller-0m98rl` | **Yes**, released 27 Nov (`2c9b9dc`). 1 account, 36 entries, 36 activities moved (backup in `movi-supabase_*`). Supabase not yet switched off. |
 
 Each live branch got a `HANDOVER.md` describing the OLD setup. They are history now; this file is current.
 
@@ -151,7 +151,7 @@ yet turned on by the owner (repo must be public).
 Learns what food someone likes from training rounds, then reads a menu photo and gives a top 3. Version 1 is built;
 training works with no setup (`?train=1` is the link the owner sends to testers).
 - **Do not merge branch `mypalette` into `main` until the secret `PALETTE_ANTHROPIC_KEY` exists**, or every deploy fails.
-- Owner still has to: make the repo public (or pay for Pages), create the Claude workspace + key + secret, register a
+- Repo is public and Pages is on (owner, 27 Nov). Owner still has to: create the Claude workspace + key + secret, register a
   fourth web app and add it to App Check, turn on Pages. Then fill `js/config.js` and merge the backend branch.
 - Never tested with real Claude or a real camera. Learner hit rates so far are on synthetic people only; the real
   test is `tools/evaluate.mjs` on exported tester sessions.
