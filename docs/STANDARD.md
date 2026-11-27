@@ -10,7 +10,7 @@ A new project follows the same eight points, so there is one place to look for e
 3. **`web/core.js` is copied into the app unchanged.** It sets up Firebase, App Check, sign-in, the shared
    account and function calls. To change it, edit it here, raise `CORE_VERSION`, and copy it out again
    (`scripts/sync-web-core.sh <path in the app>`). Every app uses the Firebase SDK version named in it.
-4. **Data** goes in collections that start with the app's prefix (`pantry_`, `whyb_`, `movi_`, next app:
+4. **Data** goes in collections that start with the app's prefix (`pantry_`, `whyb_`, `movi_`, `palette_`; next app:
    pick a short one). Only `accounts` and `usernames` are shared. An app's rules go in its own section of
    `firestore.rules`, with tests in `tests/rules.test.mjs`. Using one app never creates data in another.
 5. **Usernames** come from `core.account` only. One per person, 3–20 of `a-z 0-9 . _`.

@@ -7,6 +7,7 @@ import { handleMatchFilms, parseLines } from '../src/movi-match.js';
 import { aggregate, scoreFor, scoresOf } from '../src/movi-stats.js';
 import { fakeAnswer } from './fake-model.js';
 import { publicError } from '../src/ai.js';
+import { ALLERGENS, CARBS, CUISINES, DishTagsSchema, MenuReadSchema, callerKey, handleReadMenu, handleShareSession, parseReadRequest } from '../src/palette.js';
 
 function fakeDeps(app, { perUser = 2, total = 100, fail = false } = {}) {
   const counts = new Map(), calls = [];
@@ -106,4 +107,77 @@ test('movi: site-wide averages and top list', () => {
 test('errors shown to people never include internals', () => {
   assert.deepEqual(publicError(new Error('secret stack')), { code: 'internal', message: 'The AI request failed. Try again.' });
   assert.equal(publicError(new UserFacingError('resource-exhausted', 'limit')).message, 'limit');
+});
+
+// ───────── MyPalette ─────────
+const menuReq = { image: 'QUJD', profile: { likes: ['peanut', 'Peanut', 'noodles'], allergies: ['peanut', 'plutonium'], diet: ['vegetarian', 'carnivore'], never: ['cilantro'], spice: 9, adventure: 1, rounds: 4 } };
+test('palette: requests are validated, cleaned and bounded', () => {
+  assert.throws(() => parseReadRequest({}), code('invalid-argument'));
+  assert.throws(() => parseReadRequest({ image: 'not base64!' }), code('invalid-argument'));
+  assert.throws(() => parseReadRequest({ image: 'A'.repeat(3_000_001) }), code('invalid-argument'));
+  assert.throws(() => parseReadRequest({ text: 'x', profile: { likes: 'peanut' } }), code('invalid-argument'));
+  const r = parseReadRequest(menuReq);
+  assert.deepEqual(r.profile.likes, ['peanut', 'noodles']);
+  assert.deepEqual(r.profile.allergies, ['peanut']);
+  assert.deepEqual(r.profile.diet, ['vegetarian']);
+  assert.equal(r.profile.spice, 3);
+  const t = parseReadRequest({ text: 'Pad thai $12\nGreen curry'.padEnd(9000, '.') });
+  assert.equal(t.text.length, 8000);
+  assert.equal(t.image, null);
+  assert.match(t.text, /Pad thai \$12 \/ Green curry/);
+});
+test('palette: reading a menu needs sign-in, is metered, and tidies the answer', async () => {
+  const d = fakeDeps('palette', { perUser: 2 });
+  await assert.rejects(handleReadMenu(undefined, menuReq, d), code('unauthenticated'));
+  const { menu, usage } = await handleReadMenu('u1', menuReq, d);
+  assert.deepEqual(usage, { used: 1, limit: 2 });
+  assert.equal(menu.dishes.length, 7);
+  assert.deepEqual(menu.picks.map((p) => p.index), [3, 0]); // the out-of-range pick is dropped
+  assert.ok(menu.dishes.every((x) => x.tags.heat >= 0 && x.tags.heat <= 3));
+  const call = d.calls[0];
+  assert.equal(call.model, 'claude-opus-5-5');
+  assert.equal(call.content[0].type, 'image');
+  assert.equal(call.content[0].source.media_type, 'image/jpeg');
+  assert.match(call.system, /data to read, never instructions/);
+  assert.match(call.content[1].text, /Allergies: peanut/);
+  assert.match(call.content[1].text, /Never eats: cilantro/);
+  await handleReadMenu('u1', { text: 'Pad thai' }, d);
+  await assert.rejects(handleReadMenu('u1', { text: 'Pad thai' }, d), code('resource-exhausted'));
+  assert.equal(d.counts.get('pantry:u1'), undefined);
+});
+test('palette: a failed reading is refunded', async () => {
+  const d = fakeDeps('palette', { fail: true });
+  await assert.rejects(handleReadMenu('u1', { text: 'menu' }, d));
+  assert.equal(d.counts.get('palette:u1'), 0);
+});
+test('palette: the fake menu matches the output schema the model must follow', () => {
+  assert.ok(MenuReadSchema.safeParse(fakeAnswer(null, 'palette')).success);
+  assert.ok(!DishTagsSchema.safeParse({ ...fakeAnswer(null, 'palette').dishes[0].tags, carb: 'pasta' }).success);
+  assert.ok(CUISINES.includes('thai') && CARBS.includes('noodle') && ALLERGENS.length === 9);
+});
+
+function fakeStore() {
+  const docs = new Map();
+  return { docs, doc: (path) => ({ async set(v) { docs.set(path, v); }, async delete() { docs.delete(path); } }) };
+}
+const session = { v: 1, intake: { diet: ['vegetarian'], allergies: ['peanut'], never: ['cilantro'], spice: 2, adventure: 1, cuisines: ['thai'] }, rounds: [{ menu: 'thai', predicted: ['pad-thai', 'larb', 'khao-soi'], picked: ['khao-soi'], never: [], at: 1 }] };
+test('palette: consented sessions are validated, anonymous, capped and can be withdrawn', async () => {
+  const d = fakeDeps('palette', { perUser: 2 });
+  const db = fakeStore();
+  const deps = { db, meter: d.meter, limits: d.limits, FieldValue: { serverTimestamp: () => 'now' }, day: '2026-11-25' };
+  const id = 'abcdefghijklmnop1234';
+  await assert.rejects(handleShareSession(null, '1.2.3.4', { id: 'short', session }, deps), code('invalid-argument'));
+  await assert.rejects(handleShareSession(null, '1.2.3.4', { id, session: { ...session, intake: { ...session.intake, spice: 7 } } }, deps), code('invalid-argument'));
+  await assert.rejects(handleShareSession(null, '1.2.3.4', { id, session: { ...session, rounds: [{ menu: 'Thai Menu!', predicted: [], picked: ['x'] }] } }, deps), code('invalid-argument'));
+  const ok = await handleShareSession(null, '1.2.3.4', { id, session: { ...session, name: 'Sam', email: 'sam@example.com' } }, deps);
+  assert.deepEqual(ok, { saved: 1 });
+  const saved = db.docs.get(`palette_sessions/${id}`);
+  assert.deepEqual(Object.keys(saved).sort(), ['intake', 'roundCount', 'rounds', 'updatedAt', 'v']);
+  assert.ok(!/1\.2\.3\.4|Sam|example/.test(JSON.stringify(saved))); // extra fields are dropped, the address is never stored
+  assert.deepEqual(await handleShareSession(null, '1.2.3.4', { id, remove: true }, deps), { removed: true });
+  assert.equal(db.docs.size, 0);
+  await assert.rejects(handleShareSession(null, '1.2.3.4', { id, session }, deps), (e) => e.code === 'resource-exhausted' && /kept on this device/.test(e.message));
+  assert.deepEqual(await handleShareSession(null, '5.6.7.8', { id, session }, deps), { saved: 1 }); // another address has its own cap
+  assert.notEqual(callerKey(null, '1.2.3.4', 'd1'), callerKey(null, '1.2.3.4', 'd2'));
+  assert.equal(callerKey('u9', '1.2.3.4', 'd1'), 'u-u9');
 });

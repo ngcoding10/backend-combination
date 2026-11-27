@@ -3,7 +3,7 @@
 // has anything left for that person, or when they ask for everything to go.
 import { UserFacingError } from './errors.js';
 
-export const APPS = ['pantry', 'whyb', 'movi'];
+export const APPS = ['pantry', 'whyb', 'movi', 'palette'];
 
 async function deleteQuery(db, writer, query) {
   const snap = await query.get();
@@ -39,12 +39,18 @@ const erase = {
     ]);
     for (const name of ['movi_lists', 'movi_watchlists', 'movi_backlogs', 'movi_profiles']) writer.delete(db.doc(`${name}/${uid}`));
   },
+  // MyPalette: taste profile and meal history. Shared training sessions are anonymous (no uid), so
+  // the website withdraws those itself with the session id it kept (paletteShareSession remove).
+  async palette(db, uid, writer) {
+    await deleteQuery(db, writer, db.collection(`palette_users/${uid}/meals`));
+    writer.delete(db.doc(`palette_users/${uid}`));
+  },
 };
 
-const HOME = { pantry: 'pantry_users', whyb: 'whyb_users', movi: 'movi_profiles' };
+const HOME = { pantry: 'pantry_users', whyb: 'whyb_users', movi: 'movi_profiles', palette: 'palette_users' };
 
 /**
- * @param app 'pantry' | 'whyb' | 'movi' | 'all'
+ * @param app 'pantry' | 'whyb' | 'movi' | 'palette' | 'all'
  * @returns {{ deleted: string[], accountDeleted: boolean }}
  */
 export async function deleteMyData({ db, auth, FieldValue }, uid, app) {

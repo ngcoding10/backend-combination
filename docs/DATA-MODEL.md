@@ -66,8 +66,20 @@ Queries the rules and indexes support:
 - `movi_notifications` `where('uid', '==', me)` + `orderBy('createdAt', 'desc')`; `movi_recs` `where('to', '==', me)` + `orderBy('createdAt', 'desc')`
 - `movi_comments` `where('activityId', '==', id)` + `orderBy('createdAt')`
 
+## MyPalette (`palette_`)
+
+| Path | Fields |
+|---|---|
+| `palette_users/{uid}` | `intake` (map, ≤20 keys: diet rules, allergies, never-eat, spice 0–3, adventure 0–2, liked cuisines), `weights` (map, ≤400: the learner's feature weights), `stats` (map, optional), `history` (JSON string ≤600k: training rounds and meal feedback), `updatedAt` (server time). Owner only. |
+| `palette_users/{uid}/meals/{id}` | `title` (≤80), `cuisine` (≤60), `dishes` (list ≤80, the menu as read), `picks` (≤3), `ordered` (≤12), `ratings` (map ≤12), `createdAt` (timestamp). Owner only. |
+| `palette_sessions/{id}` | `v`, `intake` (no free text), `rounds` (`menu`, `predicted`, `picked`, `never`, `at`), `roundCount`, `updatedAt`. Anonymous training sessions shared with consent. **No browser access**: written only by `paletteShareSession`, exported by `scripts/export-palette-sessions.mjs` (or the "Export MyPalette sessions" workflow). |
+
+Functions: `paletteReadMenu({ image?, text?, profile, context }) → { menu, usage }` (signed in, metered: `PALETTE_DAILY_PER_USER`, `PALETTE_DAILY_TOTAL`, key `PALETTE_ANTHROPIC_KEY`).
+`paletteShareSession({ id, session } | { id, remove: true }) → { saved } | { removed }` (works signed out; App Check
+plus a daily cap of 300 writes per person or network address, 20,000 for everyone; no AI). The photo is never stored.
+
 ## Everything else
 
-`accountDeleteMyData({ app })` with `app` = `pantry`, `whyb`, `movi` or `all` deletes that
+`accountDeleteMyData({ app })` with `app` = `pantry`, `whyb`, `movi`, `palette` or `all` deletes that
 person's data for the app. The sign-in and username are removed only when no app has anything
 left for them.

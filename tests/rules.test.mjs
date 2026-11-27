@@ -268,6 +268,53 @@ test('movi: recommendations and notifications are private', async () => {
   await assertSucceeds(deleteDoc(doc(db('bob'), 'movi_notifications', 'n1')));
 });
 
+// ───────── MyPalette ─────────
+const paletteProfile = (over = {}) => ({ intake: { spice: 2, diet: ['vegetarian'] }, weights: { 'cuisine:thai': 0.8 }, stats: { rounds: 3 }, history: '[]', updatedAt: ts(), ...over });
+test('palette: the taste profile is owner-only, with a fixed shape and size limits', async () => {
+  const mine = doc(db('alice'), 'palette_users', 'alice');
+  await assertSucceeds(setDoc(mine, paletteProfile()));
+  await assertSucceeds(getDoc(mine));
+  await assertSucceeds(setDoc(mine, (({ stats, ...r }) => r)(paletteProfile()))); // stats is optional
+  await assertFails(getDoc(doc(db('bob'), 'palette_users', 'alice')));
+  await assertFails(getDoc(doc(db(null), 'palette_users', 'alice')));
+  await assertFails(getDocs(collection(db('bob'), 'palette_users')));
+  await assertFails(setDoc(doc(db('bob'), 'palette_users', 'alice'), paletteProfile()));
+  await assertFails(setDoc(doc(db(null), 'palette_users', 'alice'), paletteProfile()));
+  await assertFails(setDoc(mine, paletteProfile({ history: 'x'.repeat(600001) })));
+  await assertFails(setDoc(mine, paletteProfile({ weights: Object.fromEntries(Array.from({ length: 401 }, (_, i) => [`f${i}`, 0])) })));
+  await assertFails(setDoc(mine, paletteProfile({ updatedAt: new Date() })));
+  await assertFails(setDoc(mine, paletteProfile({ admin: true })));
+  await assertFails(setDoc(mine, (({ weights, ...r }) => r)(paletteProfile())));
+  await assertFails(deleteDoc(doc(db('bob'), 'palette_users', 'alice')));
+  await assertSucceeds(deleteDoc(mine));
+});
+test('palette: meal history is owner-only and bounded', async () => {
+  const meal = { title: 'Thai place', cuisine: 'Thai', dishes: [{ name: 'Pad thai' }], picks: [0], ordered: [0], ratings: { 0: true }, createdAt: ts() };
+  const m = doc(db('alice'), 'palette_users', 'alice', 'meals', 'm1');
+  await assertSucceeds(setDoc(m, meal));
+  await assertSucceeds(updateDoc(m, { ordered: [0, 1], ratings: { 0: true, 1: false } }));
+  await assertSucceeds(getDocs(collection(db('alice'), 'palette_users', 'alice', 'meals')));
+  await assertFails(getDoc(doc(db('bob'), 'palette_users', 'alice', 'meals', 'm1')));
+  await assertFails(getDocs(collection(db('bob'), 'palette_users', 'alice', 'meals')));
+  await assertFails(setDoc(doc(db('bob'), 'palette_users', 'alice', 'meals', 'm2'), meal));
+  await assertFails(setDoc(doc(db('alice'), 'palette_users', 'alice', 'meals', 'm3'), { ...meal, dishes: Array(81).fill({}) }));
+  await assertFails(setDoc(doc(db('alice'), 'palette_users', 'alice', 'meals', 'm3'), { ...meal, picks: [0, 1, 2, 3] }));
+  await assertFails(setDoc(doc(db('alice'), 'palette_users', 'alice', 'meals', 'm3'), { ...meal, title: 'x'.repeat(81) }));
+  await assertFails(setDoc(doc(db('alice'), 'palette_users', 'alice', 'meals', 'm3'), { ...meal, photo: 'base64…' }));
+  await assertFails(deleteDoc(doc(db('bob'), 'palette_users', 'alice', 'meals', 'm1')));
+  await assertSucceeds(deleteDoc(m));
+});
+test('palette: shared training sessions cannot be read or written from a browser', async () => {
+  const s = { v: 1, intake: {}, rounds: [], roundCount: 0 };
+  await seed((d) => setDoc(doc(d, 'palette_sessions', 'abcdefghijklmnop'), s));
+  for (const who of [null, 'alice']) {
+    await assertFails(setDoc(doc(db(who), 'palette_sessions', 'qrstuvwxyz123456'), s));
+    await assertFails(getDoc(doc(db(who), 'palette_sessions', 'abcdefghijklmnop')));
+    await assertFails(getDocs(collection(db(who), 'palette_sessions')));
+    await assertFails(deleteDoc(doc(db(who), 'palette_sessions', 'abcdefghijklmnop')));
+  }
+});
+
 // ───────── server-only and unknown collections ─────────
 test('server-only collections and anything unlisted are closed', async () => {
   await seed((d) => setDoc(doc(d, 'ai_usage', 'x'), { count: 1 }));
