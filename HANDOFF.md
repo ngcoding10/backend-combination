@@ -20,7 +20,7 @@ Read this first in a new chat. It replaces the long chat that built everything. 
 | Backend (rules, functions, tests, shared web code) | `ngcoding10/backend-combination` | `main` (push = test + deploy) | `main` | **Yes**, on Firebase project `combination-23e84` |
 | The Pantry (Astro + React) | `ngcoding10/recipes` | `claude/recipe-library-site-y0b77e` (GitHub Actions → Pages) | `claude/stoic-keller-0m98rl` | **Yes**, on the new backend since 24 Nov. Owner confirmed sign-in + AI recipe ("1 of 8 used") on 26 Nov. |
 | Where Have You Been (static) | `ngcoding10/wherehaveyoubeen` | `main` (Pages from branch) | `claude/stoic-keller-0m98rl` | **Yes**, released 27 Nov (`main` = `1b5e65f`). 2 old accounts moved (backup `whyb-old-firebase_2026-11-27T00-04-17-259Z`). Old project not yet switched off. |
-| Movi (static, in `docs/`) | `ngcoding10/claude` | `claude/beli-app-template-BJhj8` (Pages from branch, `/docs`) | `claude/stoic-keller-0m98rl` | **Yes**, released 27 Nov (`2c9b9dc`). 1 account, 36 entries, 36 activities moved (backup in `movi-supabase_*`). Supabase not yet switched off. |
+| Movi (static, in `docs/`) | `ngcoding10/movi` (renamed from `claude` 27 Nov; site ngcoding10.github.io/movi/) | `claude/beli-app-template-BJhj8` (Pages from branch, `/docs`) | `claude/stoic-keller-0m98rl` | **Yes**, released 27 Nov (`2c9b9dc`). 1 account, 36 entries, 36 activities moved (backup in `movi-supabase_*`). Supabase not yet switched off. |
 
 Each live branch got a `HANDOVER.md` describing the OLD setup. They are history now; this file is current.
 
@@ -147,10 +147,10 @@ yet turned on by the owner (repo must be public).
   as curated, keep it conservative, and cross-check dates against Wikidata/Wikipedia wherever possible.
 - Only one agent at a time in that repo.
 
-### MyPalette (`ngcoding10/mypalette`, `main`; backend part on branch `mypalette` of THIS repo, NOT merged)
+### MyPalette (`ngcoding10/mypalette`, `main`; backend merged and deployed 27 Nov, `a88cc36`)
 Learns what food someone likes from training rounds, then reads a menu photo and gives a top 3. Version 1 is built;
 training works with no setup (`?train=1` is the link the owner sends to testers).
-- **Do not merge branch `mypalette` into `main` until the secret `PALETTE_ANTHROPIC_KEY` exists**, or every deploy fails.
+- Connected 27 Nov: secret `PALETTE_ANTHROPIC_KEY` exists, web app registered, config + App Check key in `js/config.js`.
 - Repo is public and Pages is on (owner, 27 Nov). Owner still has to: create the Claude workspace + key + secret, register a
   fourth web app and add it to App Check, turn on Pages. Then fill `js/config.js` and merge the backend branch.
 - Never tested with real Claude or a real camera. Learner hit rates so far are on synthetic people only; the real
