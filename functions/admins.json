@@ -1,4 +1,6 @@
 {
   "//": "GeoHistory admins: Firebase Auth uids allowed to read and manage reader suggestions. One uid per entry; uids are not secret.",
-  "geohistory": []
+  "geohistory": [
+    "01muitdFmZR6aTCSzKEkcCvTqtV2"
+  ]
 }
