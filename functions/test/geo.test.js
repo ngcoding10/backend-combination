@@ -156,7 +156,7 @@ test('geo admin: list newest first with filters, counts and paging; update and d
   await assert.rejects(call({ action: 'update', id }), code('invalid-argument'));
   await call({ action: 'delete', id });
   assert.equal(store.docs.has(id), false);
-  await assert.rejects(call({ action: 'update', id, status: 'new' }), code('not-found'));
+  await assert.rejects(call({ action: 'update', id, status: 'new' }), code('failed-precondition'));
 });
 
 test('geo admin: the committed allow-list file is read and checked', () => {

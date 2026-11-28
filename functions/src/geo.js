@@ -155,7 +155,7 @@ export async function handleAdmin(uid, data, deps) {
   const v = r.data;
   if (v.action === 'update') {
     if (v.status === undefined && v.note === undefined) throw bad('Nothing to change.');
-    if (!(await deps.store.exists(v.id))) throw new UserFacingError('not-found', 'That suggestion is gone (deleted?). Reload the list.');
+    if (!(await deps.store.exists(v.id))) throw new UserFacingError('failed-precondition', 'That suggestion is gone (deleted?). Reload the list.');
     const fields = { updatedBy: uid };
     if (v.status !== undefined) fields.status = v.status;
     if (v.note !== undefined) fields.note = tidy(v.note).slice(0, 2000);

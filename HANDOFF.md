@@ -1,6 +1,6 @@
 # Handoff: one backend for The Pantry, Where Have You Been and Movi
 
-Read this first in a new chat. It replaces the long chat that built everything. Last updated 25 Nov 2026.
+Read this first in a new chat. It replaces the long chat that built everything. Last updated 28 Nov 2026.
 
 ## How the owner wants to work
 
@@ -28,8 +28,8 @@ Read next, in this repo: `docs/STANDARD.md` (the rules every app follows), `docs
 
 ## What is built and verified
 
-- **Backend:** rules, indexes, 10 functions deployed. `npm test` = 44 checks (functions 10, conversion + fuzzy 7,
-  rules 22, emulator end-to-end 5). Deploy and Tests workflows are green. Checked from outside: functions refuse
+- **Backend:** rules, indexes, 14 functions deployed. `npm test` = 63 checks on 28 Nov (functions 23, conversion + fuzzy 7,
+  rules 26, emulator end-to-end 7). Deploy and Tests workflows are green. Checked from outside: functions refuse
   callers without App Check; accounts cannot be listed.
 - **Shared web code:** `web/core.js` (v1.1.0: sign-in, shared account + username, App Check, function calls) and
   `web/fuzzy.js` (typo-tolerant search). Each app holds a byte-identical copy; never edit a copy.
@@ -157,6 +157,22 @@ yet turned on by the owner (repo must be public).
   be swapped out or cleared before ads go on that site). Content written from AI knowledge is allowed, but mark it
   as curated, keep it conservative, and cross-check dates against Wikidata/Wikipedia wherever possible.
 - Only one agent at a time in that repo.
+
+### GeoHistory reader suggestions and admin page (28 Nov 2026)
+- Backend: `geoSuggest` (no sign-in; App Check, honeypot, >=3 s on the form, per salted one-day address hash
+  `GEO_SUGGEST_PER_IP`=6/day and `GEO_SUGGEST_TOTAL`=300/day in `functions/.env`) writes `geo_suggestions/{id}`;
+  `geoAdminSuggestions` lists / updates / deletes them for allow-listed uids only. Code `functions/src/geo.js`.
+  `geo_suggestions` and `config/*` are closed to browsers (rules tests). The hash salt is generated on first use and
+  kept in `config/geo_salt` (server-only); no Secret Manager secret needed.
+- Site: form at the bottom of every panel (Firebase loads only when it is opened); `admin.html` (Google sign-in).
+  GeoHistory reuses The Pantry's registered web app config (same origin, already in App Check): no console step.
+- Hidden door: type `lavafoundry` three times in the search box, then triple-click "The" in the year heading.
+  Only a door; the lock is the server-side allow-list.
+- **Adding an admin = one line:** put the account id (uid) in `functions/admins.json`, e.g.
+  `"geohistory": ["AbC123..."]`, push to `main`; the Deploy workflow applies it. The owner gets his uid by signing in
+  on `admin.html`, which then says "Not an admin. Your account id is ...". (The Firestore doc `config/admins`
+  `{ geohistory: [uid] }` also works, without a deploy, from the Firebase console.) Uids are not secret.
+- Admin list is empty as of this note until the owner sends his uid.
 
 ### MyPalette (`ngcoding10/mypalette`, `main`; backend merged and deployed 27 Nov, `a88cc36`)
 Learns what food someone likes from training rounds, then reads a menu photo and gives a top 3. Version 1 is built;
