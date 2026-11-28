@@ -152,6 +152,10 @@ yet turned on by the owner (repo must be public).
   calm animation (no flash), scholarly look. Audit 1,364/1,376, e2e 157/158 last full run (one threshold loosened, not
   rerun). data/ 139.4 MB. Write-up queue resumes at `tools/curated/writeups/queue.json` (next: COVID-19, quantum
   mechanics, Russo-Ukrainian war). 19 flag images still missing (Commons refuses scripts).
+- Write-up research PAUSED by the owner (442 written; resume via tools/curated/writeups/queue.json `resume`). Last 3 batches
+  failed the 2% re-check (4/10/12%); recommended next step is a clean-up pass over all write-ups (rule 8 + numsingle.py).
+  Owner's rule for wars/conflicts incl. Gaza and Israeli-Palestinian items (Q124086054, Q151622): "completely factual and
+  contextual", a dated sequence of who did what; write neutrally with each claim sourced/attributed. Not started yet.
 - **The owner's priority is depth and accuracy above everything: "tons and tons of research, be super thorough".**
 - Owner's decisions: non-commercial-licensed datasets ARE allowed (his call; record each in `CREDITS.md`; they must
   be swapped out or cleared before ads go on that site). Content written from AI knowledge is allowed, but mark it
