@@ -315,6 +315,23 @@ test('palette: shared training sessions cannot be read or written from a browser
   }
 });
 
+test('geohistory: suggestions and server config cannot be read or written from a browser', async () => {
+  const s = { text: 'The Treaty of Paris is missing.', place: '', date: '1763', year: 1763, subject: null, sourceUrl: '', status: 'new', note: '', createdAt: new Date() };
+  await seed(async (d) => { await setDoc(doc(d, 'geo_suggestions', 'abc1234567'), s); await setDoc(doc(d, 'config', 'admins'), { geohistory: ['alice'] }); });
+  for (const who of [null, 'alice', 'bob']) {
+    await assertFails(addDoc(collection(db(who), 'geo_suggestions'), s));
+    await assertFails(setDoc(doc(db(who), 'geo_suggestions', 'new1234567'), s));
+    await assertFails(getDoc(doc(db(who), 'geo_suggestions', 'abc1234567')));
+    await assertFails(getDocs(collection(db(who), 'geo_suggestions')));
+    await assertFails(getDocs(query(collection(db(who), 'geo_suggestions'), where('status', '==', 'new'))));
+    await assertFails(updateDoc(doc(db(who), 'geo_suggestions', 'abc1234567'), { status: 'added' }));
+    await assertFails(deleteDoc(doc(db(who), 'geo_suggestions', 'abc1234567')));
+    await assertFails(getDoc(doc(db(who), 'config', 'admins')));             // even a listed admin cannot read the list
+    await assertFails(setDoc(doc(db(who), 'config', 'admins'), { geohistory: [who ?? 'x'] }));
+    await assertFails(getDoc(doc(db(who), 'config', 'geo_salt')));
+  }
+});
+
 // ───────── server-only and unknown collections ─────────
 test('server-only collections and anything unlisted are closed', async () => {
   await seed((d) => setDoc(doc(d, 'ai_usage', 'x'), { count: 1 }));

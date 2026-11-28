@@ -16,6 +16,7 @@ import { onActivityDeleted, onCommentWritten, onFollowWritten, onLikeWritten, on
 import { rebuildStats } from './src/movi-stats.js';
 import { deleteMyData } from './src/account.js';
 import { handleReadMenu, handleShareSession } from './src/palette.js';
+import { handleSuggest, handleAdmin, firestoreGeoStore } from './src/geo.js';
 
 initializeApp();
 const db = getFirestore();
@@ -30,6 +31,8 @@ const MOVI_DAILY_PER_USER = defineInt('MOVI_DAILY_PER_USER', { default: 15, desc
 const PALETTE_ANTHROPIC_KEY = defineSecret('PALETTE_ANTHROPIC_KEY');
 const PALETTE_DAILY_PER_USER = defineInt('PALETTE_DAILY_PER_USER', { default: 10, description: 'MyPalette: menu readings each person may make per day' });
 const PALETTE_DAILY_TOTAL = defineInt('PALETTE_DAILY_TOTAL', { default: 150, description: 'MyPalette: menu readings for everyone per day (the spending cap)' });
+const GEO_SUGGEST_PER_IP = defineInt('GEO_SUGGEST_PER_IP', { default: 6, description: 'GeoHistory: suggestions each network address may send per day' });
+const GEO_SUGGEST_TOTAL = defineInt('GEO_SUGGEST_TOTAL', { default: 300, description: 'GeoHistory: suggestions from everyone per day' });
 const MOVI_DAILY_TOTAL = defineInt('MOVI_DAILY_TOTAL', { default: 200, description: 'Movi: AI requests for everyone per day (the spending cap)' });
 
 // Only pages on these addresses may call the functions, and (outside the emulator) only with a
@@ -44,11 +47,11 @@ const asker = (secret, app) => (EMULATOR && process.env.FAKE_AI === '1')
   ? async ({ schema }) => (await import('./test/fake-model.js')).fakeAnswer(schema, app)
   : claudeAsk({ apiKey: secret.value(), log: (usage) => logger.info('anthropic usage', { app, ...usage }) });
 
-async function run(name, fn) {
+async function run(name, fn, fallback = null) {
   try {
     return await fn();
   } catch (e) {
-    const { code, message } = publicError(e);
+    const { code, message } = fallback && !(e instanceof UserFacingError) ? { code: 'internal', message: fallback } : publicError(e);
     if (!(e instanceof UserFacingError)) logger.error(`${name} failed`, { status: e?.status, message: e?.message });
     throw new HttpsError(code, message);
   }
@@ -83,6 +86,18 @@ export const moviOnActivityDeleted = onDocumentDeleted(trigger('movi_activities/
 export const moviRebuildStats = onSchedule({ schedule: 'every 60 minutes', region: REGION, timeoutSeconds: 300, memory: '512MiB', maxInstances: 1 }, async () => {
   logger.info('movi stats', await rebuildStats(db));
 });
+
+// ───────── GeoHistory ─────────
+// Reader suggestions: no sign-in, so App Check plus a honeypot, a minimum time on the form and daily caps
+// (per salted one-day hash of the address, and for everyone) keep scripts out. Admin view: allow-listed uids only.
+const geoStore = firestoreGeoStore(db, FieldValue);
+// The caller's address: the last X-Forwarded-For entry is the one Google's front end added (earlier ones can be
+// typed by the caller); it is only ever hashed with a secret salt and the day, never stored.
+const callerIp = (raw) => String(raw?.headers?.['x-forwarded-for'] ?? '').split(',').map((s) => s.trim()).filter(Boolean).at(-1) || raw?.ip || '';
+export const geoSuggest = onCall({ ...callable, timeoutSeconds: 30 }, (req) => run('geoSuggest', () => handleSuggest(callerIp(req.rawRequest), req.data,
+  { store: geoStore, meter, day: utcDay(), limits: { perIp: GEO_SUGGEST_PER_IP.value(), total: GEO_SUGGEST_TOTAL.value() } }), 'The suggestion could not be saved. Try again in a minute.'));
+export const geoAdminSuggestions = onCall({ ...callable, timeoutSeconds: 60 }, (req) => run('geoAdminSuggestions', () => handleAdmin(req.auth?.uid, req.data,
+  { store: geoStore, admins: () => geoStore.admins() }), 'That did not work. Try again.'));
 
 // ───────── Shared ─────────
 export const accountDeleteMyData = onCall({ ...callable, timeoutSeconds: 120 }, (req) => run('accountDeleteMyData', () => deleteMyData({ db, auth: getAuth(), FieldValue }, req.auth?.uid, req.data?.app)));

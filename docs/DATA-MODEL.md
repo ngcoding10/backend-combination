@@ -12,7 +12,8 @@ Every write that says "server time" must use `serverTimestamp()` — the rules r
 |---|---|---|
 | `accounts/{uid}` | `username`, `displayName` (≤40), `createdAt`, `updatedAt` (server time) | a signed-in person can read one account by id; nobody can list them. write: owner, only together with `usernames/{username}` |
 | `usernames/{name}` | `uid` | anyone can look up one exact name; nobody can list them. One name per person; names are `^[a-z0-9_.]{3,20}$` |
-| `ai_usage/{app}_{day}_{uid}` and `…_total` | daily AI counters | Cloud Functions only |
+| `ai_usage/{app}_{day}_{uid}` and `…_total` | daily AI counters (also GeoHistory's suggestion caps, keyed by a salted one-day address hash) | Cloud Functions only |
+| `config/admins`, `config/geo_salt` | admin uids per app (`geohistory: [uid]`, added to `functions/admins.json`); the random salt for address hashes | Cloud Functions only; no browser can read them |
 
 Use `core.account.claim(name)` from `web/core.js` — never write these two by hand. A person gets
 an account record the first time an app needs a username. Using one app does not create
@@ -77,6 +78,17 @@ Queries the rules and indexes support:
 Functions: `paletteReadMenu({ image?, text?, profile, context }) → { menu, usage }` (signed in, metered: `PALETTE_DAILY_PER_USER`, `PALETTE_DAILY_TOTAL`, key `PALETTE_ANTHROPIC_KEY`).
 `paletteShareSession({ id, session } | { id, remove: true }) → { saved } | { removed }` (works signed out; App Check
 plus a daily cap of 300 writes per person or network address, 20,000 for everyone; no AI). The photo is never stored.
+
+## GeoHistory (`geo_`)
+
+| Path | Fields |
+|---|---|
+| `geo_suggestions/{id}` | `text` (10–2,000), `place` (≤120), `date` (≤60, as typed), `year` (int or null), `subject` (`{ kind: polity/empire/event/us/colony/modern, id, name }` or null), `sourceUrl` (http(s) or ''), `email` (only if given), `status` (`new`/`reviewing`/`added`/`rejected`), `note` (admin, ≤2,000), `createdAt`, `updatedAt`, `updatedBy`. **No browser access.** No address, uid or other data about the sender is stored. |
+
+Functions: `geoSuggest({ text, place, date, year, subject, sourceUrl, email, hp, ms }) → { ok }` (works signed out; App Check,
+honeypot `hp`, at least 3 s on the form `ms`, daily caps `GEO_SUGGEST_PER_IP` per salted address hash and `GEO_SUGGEST_TOTAL`).
+`geoAdminSuggestions({ action: 'list', status?, yearFrom?, yearTo?, q?, cursor?, limit? } | { action: 'update', id, status?, note? } | { action: 'delete', id })`
+(signed in, uid must be in `functions/admins.json` → `geohistory` or in `config/admins`; others get `permission-denied`).
 
 ## Everything else
 

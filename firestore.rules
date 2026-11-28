@@ -1,7 +1,7 @@
 rules_version = '2';
 // One Firestore for every app. Shared: accounts, usernames. Per app: pantry_*, whyb_*, movi_*, palette_*.
 // Anything not matched below is denied. Collections written only by Cloud Functions
-// (ai_usage, movi_notifications creation, movi_film_stats, movi_stats, palette_sessions) have no client write rule.
+// (ai_usage, movi_notifications creation, movi_film_stats, movi_stats, palette_sessions, geo_suggestions, config) have no client write rule.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -330,5 +330,14 @@ service cloud.firestore {
     // Anonymous training sessions shared with consent. Written only by the paletteShareSession
     // function (App Check + daily caps), read only by the owner's export script. No browser access.
     match /palette_sessions/{id} { allow read, write: if false; }
+
+    // ───────────────────────── GeoHistory ─────────────────────────
+    // Reader suggestions. Written only by the geoSuggest function (App Check, honeypot, daily caps) and
+    // read or changed only through geoAdminSuggestions (allow-listed uids). No browser access at all.
+    match /geo_suggestions/{id} { allow read, write: if false; }
+
+    // ───────────────────────── Server configuration ─────────────────────────
+    // config/admins (admin uids per app) and config/geo_salt (the salt for hashing addresses): server code only.
+    match /config/{id} { allow read, write: if false; }
   }
 }

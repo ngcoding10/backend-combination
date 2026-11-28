@@ -140,3 +140,42 @@ test('palette: menu reading needs sign-in, is limited per day; sessions are shar
   const res = await erin.core.deleteMyData('palette');
   assert.deepEqual(res, { deleted: ['palette'], accountDeleted: true });
 });
+
+test('geohistory: anyone can suggest (checked, capped per address); only listed admins can read and manage', async () => {
+  const anon = createCore({ appName: 'anon3', sdk: { ...sdk, app: { ...app, initializeApp: (c) => app.initializeApp(c, 'anon3') } }, config: null, emulator: true, offlineCache: false });
+  const good = { text: `Suggestion ${run}: the Treaty of Paris (1763) is missing.`, place: 'Paris', date: '10 February 1763', year: 1763, subject: { kind: 'polity', id: 'France', name: 'France' }, sourceUrl: 'https://en.wikipedia.org/wiki/Treaty_of_Paris_(1763)', email: '', hp: '', ms: 8000 };
+  assert.deepEqual(await anon.call('geoSuggest', good), { ok: true });
+  await assert.rejects(anon.call('geoSuggest', { ...good, text: 'short' }), (e) => e.code === 'invalid-argument');
+  await assert.rejects(anon.call('geoSuggest', { ...good, sourceUrl: 'javascript:alert(1)' }), (e) => e.code === 'invalid-argument');
+  await assert.rejects(anon.call('geoSuggest', { ...good, ms: 500 }), (e) => e.code === 'failed-precondition');
+  assert.deepEqual(await anon.call('geoSuggest', { ...good, text: `Honeypot ${run} filled in by a script.`, hp: 'x' }), { ok: true });
+  await assert.rejects(F.getDocs(F.collection(alice.db, 'geo_suggestions')), (e) => e.code === 'permission-denied');
+
+  // not signed in, or signed in but not on the list: refused, and the caller can be told their own uid
+  await assert.rejects(anon.call('geoAdminSuggestions', { action: 'list' }), (e) => e.code === 'unauthenticated');
+  await assert.rejects(bob.core.call('geoAdminSuggestions', { action: 'list' }), (e) => e.code === 'permission-denied' && e.message === 'Not an admin.');
+  // put alice on the server-side list (config/admins), the way the owner can without a deploy
+  const r = await fetch('http://127.0.0.1:8080/v1/projects/demo-apps/databases/(default)/documents/config/admins', {
+    method: 'PATCH', headers: { Authorization: 'Bearer owner', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fields: { geohistory: { arrayValue: { values: [{ stringValue: alice.uid }] } } } }),
+  });
+  assert.equal(r.status, 200);
+  const list = await alice.core.call('geoAdminSuggestions', { action: 'list', q: run });
+  assert.equal(list.items.length, 1);                                  // the honeypot one was never stored
+  const s = list.items[0];
+  assert.equal(s.status, 'new');
+  assert.equal(s.year, 1763);
+  assert.equal(typeof s.createdAt, 'number');
+  assert.ok(!('ip' in s) && !JSON.stringify(s).includes('127.0.0.1'));
+  assert.ok(list.counts.all >= 1 && list.counts.new >= 1);
+  await alice.core.call('geoAdminSuggestions', { action: 'update', id: s.id, status: 'reviewing', note: 'checking' });
+  const rev = await alice.core.call('geoAdminSuggestions', { action: 'list', status: 'reviewing', yearFrom: 1700, yearTo: 1800 });
+  assert.deepEqual(rev.items.map((x) => [x.id, x.note]), [[s.id, 'checking']]);
+  await assert.rejects(bob.core.call('geoAdminSuggestions', { action: 'delete', id: s.id }), (e) => e.code === 'permission-denied');
+  await alice.core.call('geoAdminSuggestions', { action: 'delete', id: s.id });
+  assert.equal((await alice.core.call('geoAdminSuggestions', { action: 'list', q: run })).items.length, 0);
+
+  // the per-address daily cap (6 in functions/.env): one was used above
+  for (let i = 0; i < 5; i++) await anon.call('geoSuggest', { ...good, text: `${good.text} (${i})` });
+  await assert.rejects(anon.call('geoSuggest', good), (e) => e.code === 'resource-exhausted' && /tomorrow/.test(e.message));
+});
