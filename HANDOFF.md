@@ -146,6 +146,12 @@ yet turned on by the owner (repo must be public).
   map key (`js/key.js`), new time bar (prev/next change, play, Slow/Normal/Fast/Fastest, ticks + era bands), copy and
   type pass. Audit 1,231/1,242, e2e 124/124. Weak: flash subtle, red edge = whole state not front, frames 20-35%
   slower (software render), open key covers the Americas on desktop, ~1% colour flips.
+- Rounds 9-10 (27-28 Nov, `main` at `31fd9944`): flag fill (modern successor's flag, own flag if no successor; curated
+  `tools/curated/flag_fills.json`), dated flag badges (307 states), country context panel (`js/context.js`; fields
+  spot-checked at <=2% error), 90 multi-source event write-ups + ~93k labelled Wikipedia excerpts, year-first panel,
+  calm animation (no flash), scholarly look. Audit 1,364/1,376, e2e 157/158 last full run (one threshold loosened, not
+  rerun). data/ 139.4 MB. Write-up queue resumes at `tools/curated/writeups/queue.json` (next: COVID-19, quantum
+  mechanics, Russo-Ukrainian war). 19 flag images still missing (Commons refuses scripts).
 - **The owner's priority is depth and accuracy above everything: "tons and tons of research, be super thorough".**
 - Owner's decisions: non-commercial-licensed datasets ARE allowed (his call; record each in `CREDITS.md`; they must
   be swapped out or cleared before ads go on that site). Content written from AI knowledge is allowed, but mark it
